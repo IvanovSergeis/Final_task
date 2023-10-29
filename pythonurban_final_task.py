@@ -1,61 +1,81 @@
 # -*- coding: utf-8 -*-
 """PythonUrban_final_task.ipynb
 
-# Итоговый проект. Улицы. Объекты культурного наследия.
+# Финальное задание.
 """
 
 # TODO собрать установку всех необходимых модулей в одном месте
 
+!pip install geopandas
+
+!pip install mapclassify  # необходимо для визуализации
+
+!pip install osmnx  # устанавливаем модуль osmnx
+
+!pip install keplergl
+
+
 # TODO собрать импорты всех модулей в одном месте
+
+import geopandas as gpd
+
+import osmnx as ox
+
+import requests
+
+import json
+
+from keplergl import KeplerGl
+
 
 TILES = "CartoDB positron"  # Название подложки для карт
 
 # TODO указать любой район Санкт-Петербург из OSM https://wiki.openstreetmap.org/wiki/RU:%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3/%D0%A0%D0%B0%D0%B9%D0%BE%D0%BD%D1%8B
-TERRITORY_NAME = ...  # название территории для которой будут строиться слои
+TERRITORY_NAME = 'Петроградский район, Санкт-Петербург'  # название территории для которой будут строиться слои
 
-# TODO указать ссылку на файл из вашего github репозитория, которая начинается с https://raw.githubusercontent.com/
-KGIOP_FILE_URL = ...  # ссылка на слой с объектами культурного наследия
-STREETS_FILE_URL = ...  # ссылка на слой с улицами
 
-"""## Территория
 
-### Загрузка территории из OSM (Extract)
-"""
+KGIOP_FILE_URL = "https://raw.githubusercontent.com/aeksei/PythonUrbanITMO2023/main/geojson_layers/kgiop_objects.geojson"  # ссылка на слой с объектами культурного наследия
 
-# TODO загрузить geodataframe с геометрией для территории TERRITORY_NAME
+STREETS_FILE_URL = "https://raw.githubusercontent.com/aeksei/PythonUrbanITMO2023/main/geojson_layers/streets.geojson"  # ссылка на слой с улицами
 
-"""## Улицы
 
-### Загрузка файла с улицами (Extract)
-"""
+district = ox.geocode_to_gdf(TERRITORY_NAME)
 
-# TODO отфильтровать улицы по маске геометрии территории полученной ранее
+district.explore(tiles=TILES)
 
-"""### Обработка данных с улицами (Transform)"""
 
-# TODO сгруппировать и объединить геометрии с одинаковыми названиями
+district = ox.geocode_to_gdf(TERRITORY_NAME)
 
-"""### Сохранение слоя с улицами (Load)"""
+gdf = gpd.read_file(KGIOP_FILE_URL, mask=district)
 
-# TODO переименовать столбцы в русские названия, кроме столбца geometry
+gdf.explore(tiles=TILES)
 
-# TODO для того чтобы переименовать индекс, нужно обратиться и нему и вызвать от него метод rename (https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Index.rename.html)
+gdf.crs
 
-# TODO сохранить слой в географической проекции в формате GeoJSON
+gdf
 
-"""## Объекты культурного наследия
 
-### Загрузка объектов культурного наследия (Extract)
-"""
 
-# TODO отфильтровать улицы по маске геометрии территории полученной ранее
+district = ox.geocode_to_gdf(TERRITORY_NAME)
 
-"""### Обработка объектов культурного наследия (Transform)"""
+gdf = gpd.read_file(STREETS_FILE_URL, mask=district)
 
-# TODO добавить два столбца lon и lat, в которых будут долгота и широта
+gdf.explore(tiles=TILES)
 
-"""### Сохранение слоя с объектами культурного наследия (Load)"""
+gdf.crs
 
-# TODO переименовать столбцы в русские названия, кроме столбца geometry
+gdf
 
-# TODO сохранить слой в географической проекции в формате GeoJSON
+
+
+osm_id = "R1114905"
+
+territory = ox.geocode_to_gdf([osm_id], by_osmid=True)
+
+territory
+
+
+gdf.to_crs(4326).to_file('streets.geojson', driver='GeoJSON')
+
+gdf.to_crs(4326).to_file('kgiop_objects.geojson', driver='GeoJSON')
